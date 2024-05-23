@@ -11,20 +11,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McDuck.XXTea.Benchmarks", "
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8417F026-2918-4B0E-8E99-0240B50ADA92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8417F026-2918-4B0E-8E99-0240B50ADA92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8417F026-2918-4B0E-8E99-0240B50ADA92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8417F026-2918-4B0E-8E99-0240B50ADA92}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5F3F0633-F8DB-41D0-B6BB-6B3C28412D78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F3F0633-F8DB-41D0-B6BB-6B3C28412D78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F3F0633-F8DB-41D0-B6BB-6B3C28412D78}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F3F0633-F8DB-41D0-B6BB-6B3C28412D78}.Release|Any CPU.Build.0 = Release|Any CPU
-		{627F02D5-6DDA-4762-BBA6-519E78AEB4E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{627F02D5-6DDA-4762-BBA6-519E78AEB4E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{627F02D5-6DDA-4762-BBA6-519E78AEB4E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{627F02D5-6DDA-4762-BBA6-519E78AEB4E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

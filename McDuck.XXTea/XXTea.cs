@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -9,7 +8,7 @@ namespace McDuck.XXTea
     {
         /// <summary>
         /// XXTea uses 128-bit key, which is by reference four 32-bit uint, but bytes are easier to work with.
-        /// Therefore we just know that we need 128 bits in an array of 8-bit bytes.
+        /// Therefore, we just know that we need 128 bits in an array of 8-bit bytes.
         /// </summary>
         private const int KeyLength = 128 / 8;
 
@@ -26,7 +25,7 @@ namespace McDuck.XXTea
         public static byte[] Decrypt(byte[] cipherText, byte[] key) =>
             RemoveByteArrayPadding(
                     Decrypt(GetSpan(cipherText), key)
-                    )
+                )
                 .ToArray();
 
         private static Span<byte> Encrypt(Span<uint> v, byte[] password)
@@ -59,7 +58,6 @@ namespace McDuck.XXTea
                     y = v[0];
                     z = v[n - 1] += Mx(y, z, sum, key, p, e);
                 }
-
             } while (--rounds > 0);
 
             return MemoryMarshal.Cast<uint, byte>(v);
@@ -81,8 +79,8 @@ namespace McDuck.XXTea
                 var y = v[0];
                 do
                 {
-                    uint z, p, e;
-                    e = (sum >> 2) & 3;
+                    uint z, p;
+                    var e = (sum >> 2) & 3;
                     for (p = n - 1; p > 0; --p)
                     {
                         z = v[(int) (p - 1)];
@@ -100,12 +98,13 @@ namespace McDuck.XXTea
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint Mx(uint y, uint z, uint sum, Span<uint> key, uint p, uint e)
-            => unchecked(((z >> 5 ^ y << 2) + (y >> 3 ^ z << 4)) ^ ((sum ^ y) + (key[(int) ((p & 3) ^ e)] ^ z)));
+            => unchecked((((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^
+                         ((sum ^ y) + (key[(int) ((p & 3) ^ e)] ^ z)));
 
         private static Span<uint> PrepareKey(byte[] key)
         {
             key = TrimKey(key);
-            return MemoryMarshal.Cast<byte, uint>(new Span<byte>(key));
+            return MemoryMarshal.Cast<byte, uint>(new(key));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -117,29 +116,32 @@ namespace McDuck.XXTea
             // We will need a transformed one.
             var newKey = new byte[KeyLength];
 
-            // No key? Suit yourself. We will default to just zeros.
-            if (key.Length == 0)
-                return newKey;
-
-            if (key.Length < KeyLength)
+            switch (key.Length)
             {
+                // No key? Suit yourself. We will default to just zeros.
+                case 0:
+                    return newKey;
                 // If the key is too short, we will repeat it until it is of required length
-                for (var i = 0; i < KeyLength; ++i)
-                    newKey[i] = key[i % key.Length];
-            }
-
-            if (key.Length > KeyLength)
-            {
+                case < KeyLength:
+                {
+                    for (var i = 0; i < KeyLength; ++i)
+                        newKey[i] = key[i % key.Length];
+                    break;
+                }
                 // If the key is too long, we will cycle around and XOR until we run out
-                for (var i = 0; i < key.Length; ++i)
-                    newKey[i % KeyLength] = (byte) (newKey[i % KeyLength] ^ key[i]);
+                case > KeyLength:
+                {
+                    for (var i = 0; i < key.Length; ++i)
+                        newKey[i % KeyLength] = (byte) (newKey[i % KeyLength] ^ key[i]);
+                    break;
+                }
             }
 
             return newKey;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Span<uint> GetSpan(byte[] data) => MemoryMarshal.Cast<byte, uint>(new Span<byte>(data));
+        private static Span<uint> GetSpan(byte[] data) => MemoryMarshal.Cast<byte, uint>(new(data));
 
         private static void PadByteArray(ref byte[] data)
         {
@@ -147,26 +149,26 @@ namespace McDuck.XXTea
             // There are sizeof(uint) bytes in uint
             // We need to pad the data, which is easy
             // However we also need to persist the information
-            // of how much we padded, so it can be trimmed during decryption
+            // of how much we padded, so it can be trimmed during decryption,
             // so we will first pad with 0-(sizeof(uint)-1) bytes, and then put the uint
             // representing the padding length at the end.
             // So in total we add sizeof(uint) + data.Length % sizeof(uint) bytes
 
             // Resize, just pads with 0's
-            var reminder = (sizeof(uint) - data.Length % sizeof(uint)) % sizeof(uint);
-            Array.Resize(ref data, data.Length + reminder + sizeof(uint));
+            var remainder = (sizeof(uint) - data.Length % sizeof(uint)) % sizeof(uint);
+            Array.Resize(ref data, data.Length + remainder + sizeof(uint));
 
             // Set last sizeof(uint) bytes to the value of the number of padded bytes
-            Array.Copy(BitConverter.GetBytes(((uint) reminder)), 0, data, data.Length - sizeof(uint), sizeof(uint));
+            Array.Copy(BitConverter.GetBytes((uint) remainder), 0, data, data.Length - sizeof(uint), sizeof(uint));
         }
 
         private static Span<byte> RemoveByteArrayPadding(Span<byte> data)
         {
             // The data is [0][1]...[n], then 0-(sizeof(uint)-1) '0', and then sizeof(uint) bytes describing how many zeroes were added
-            var reminder = (int) MemoryMarshal.Read<uint>(data.Slice(data.Length - sizeof(uint)));
+            var remainder = (int) MemoryMarshal.Read<uint>(data[^sizeof(uint)..]);
 
             // Slice back to the original data size
-            return data.Slice(0, data.Length - reminder - sizeof(uint));
+            return data[..(data.Length - remainder - sizeof(uint))];
         }
     }
 }
